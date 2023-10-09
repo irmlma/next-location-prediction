@@ -1,20 +1,16 @@
 misc:
-  dataset: gc
-
-  total_loc_num: 29260
-
-  # 
-  total_user_num: 801
-
+  dataset: sp
+  # relative, absolute
+  time_format: absolute
 
   # 
   if_embed_time: True
 
-  verbose: False
+  verbose: True
   debug: False
   batch_size: 256
-  print_step: 300
-  num_workers: 16
+  print_step: 10
+  num_workers: 0
 
 embedding:
   base_emb_size: 64
@@ -48,10 +44,5 @@ optimiser:
   lr_gamma: 0.1
 
 dataset:
-  source_root: /cluster/scratch/hongy/sequence_2/nn
-  save_root: /cluster/scratch/hongy/outputs
-
-# 
-# dataset:
-#   source_root: ./WP1/npp/data/sequence_2/nn
-#   save_root: ./WP1/npp/outputs
+  temp_save_root: ./data
+  save_root: ./runs

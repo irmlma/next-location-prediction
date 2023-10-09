@@ -25,7 +25,6 @@ class EarlyStopping:
         self.delta = delta
 
     def __call__(self, return_dict, model):
-
         score = return_dict["val_loss"]
 
         if self.best_score is None:

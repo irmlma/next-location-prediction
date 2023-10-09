@@ -1,12 +1,11 @@
 misc:
-  dataset: sp
+  dataset: dtepr
   # relative, absolute
-  time_format: absolute
+  time_format: relative
 
   # 
   if_embed_time: True
 
-  # how many days in the past we consider
   verbose: True
   debug: False
   batch_size: 256

@@ -1,5 +1,4 @@
 import os
-import pandas as pd
 
 import pickle as pickle
 import datetime
@@ -24,7 +23,7 @@ def get_test_result(config, best_model, test_loader, device):
 
 
 def get_models(config, device):
-    if config.networkName == "transformer":
+    if config.networkName == "mhsa":
         model = TransEncoder(config=config).to(device)
     elif config.networkName == "rnn":
         model = RNNs(config=config).to(device)

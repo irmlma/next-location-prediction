@@ -1,20 +1,15 @@
 misc:
-  dataset: gc
-
-  total_loc_num: 29018
-
-  # 
-  total_user_num: 801
+  dataset: sp
+  # relative, absolute
+  time_format: absolute
 
   # 
   if_embed_time: True
 
-  # how many days in the past we consider
-  previous_day: 7
-  verbose: False
+  verbose: True
   debug: False
   batch_size: 256
-  print_step: 300
+  print_step: 10
   num_workers: 0
   
 
@@ -22,8 +17,8 @@ embedding:
   base_emb_size: 64
 
 model:
-  networkName: transformer
-  # only for transformer
+  networkName: mhsa
+  # only for mhsa
   num_encoder_layers: 4
   nhead: 8
   dim_feedforward: 256
@@ -49,10 +44,6 @@ optimiser:
   lr_step_size: 1
   lr_gamma: 0.1
 
-# dataset:
-#   source_root: /cluster/scratch/hongy/sequence_4/nn
-#   save_root: /cluster/scratch/hongy/outputs
-
 dataset:
-  source_root: ./WP1/npp/data/nn
-  save_root: ./WP1/npp/outputs
+  temp_save_root: ./data
+  save_root: ./runs

@@ -1,4 +1,3 @@
-
 import torch.nn as nn
 import torch
 from torch import Tensor
@@ -26,7 +25,6 @@ class TransEncoder(nn.Module):
 
         self.fc = FullyConnected(self.d_input, config, if_residual_layer=True)
 
-        self.features_ = None
         self._init_weights()
 
     def forward(self, src, context_dict, device) -> Tensor:
@@ -44,7 +42,6 @@ class TransEncoder(nn.Module):
             seq_len.view([1, -1, 1]).expand([1, out.shape[1], out.shape[-1]]) - 1,
         ).squeeze(0)
 
-        self.features_ = out
         return self.fc(out)
 
     def _generate_square_subsequent_mask(self, sz):
