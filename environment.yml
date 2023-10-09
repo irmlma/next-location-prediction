@@ -1,6 +1,9 @@
 name: prediction
 channels:
+  - pytorch
   - conda-forge
   - defaults
 dependencies:
   - python=3.10
+  - pytorch
+  - trackintel=1.2.2

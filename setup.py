@@ -20,7 +20,7 @@ setup(
     author_email=("hongy@ethz.ch"),
     license="Apache-2.0",
     url="https://github.com/irmlma/next-location-prediction",
-    install_requires=["Pytorch"],
+    install_requires=["Pytorch", "trackintel"],
     classifiers=[
         "License :: OSI Approved :: Apache Software License",
         "Intended Audience :: Science/Research",
