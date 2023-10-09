@@ -1,9 +1,12 @@
 name: prediction
 channels:
   - pytorch
+  - huggingface
   - conda-forge
   - defaults
 dependencies:
   - python=3.10
   - pytorch
   - trackintel=1.2.2
+  - easydict
+  - transformers
