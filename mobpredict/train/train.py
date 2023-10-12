@@ -59,7 +59,7 @@ def calculate_correct_total_prediction(logits, true_y):
 
         # f1 score
         if k == 1:
-            top1 = torch.squeeze(prediction).cpu()
+            top1 = torch.squeeze(prediction, dim=-1).cpu()
 
         top_k = torch.eq(true_y[:, None], prediction).any(dim=1).sum().cpu().numpy()
         # top_k = np.sum([curr_y in pred for pred, curr_y in zip(prediction, true_y)])
