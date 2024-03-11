@@ -20,7 +20,7 @@ class TransEncoder(nn.Module):
         )
         encoder_norm = torch.nn.LayerNorm(self.d_input)
         self.encoder = torch.nn.TransformerEncoder(
-            encoder_layer=encoder_layer, num_layers=config.num_encoder_layers, norm=encoder_norm
+            encoder_layer=encoder_layer, num_layers=config.num_encoder_layers, norm=encoder_norm, mask_check=True
         )
 
         self.fc = FullyConnected(self.d_input, config, if_residual_layer=True)
@@ -45,7 +45,7 @@ class TransEncoder(nn.Module):
         return self.fc(out)
 
     def _generate_square_subsequent_mask(self, sz):
-        return torch.triu(torch.full((sz, sz), float("-inf")), diagonal=1)
+        return torch.triu(torch.full((sz, sz), float("-inf"), dtype=torch.bool), diagonal=1)
 
     def _init_weights(self):
         """Initiate parameters in the transformer model."""

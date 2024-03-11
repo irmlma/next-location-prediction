@@ -1,7 +1,14 @@
 misc:
-  dataset: dtepr
-  # relative, absolute
-  time_format: relative
+  # True: train NN with 'train_dataset'
+  # False: use trained NN from pretrain_filepath with 'train_dataset'
+  training: True
+
+  data_save_root: ./data
+  save_root: ./runs
+
+  train_dataset: dtepr
+  inference_data_dir: dtepr
+  pretrain_file: mobis_mhsa_1698746890
 
   # 
   if_embed_time: True
@@ -18,24 +25,33 @@ embedding:
 
 model:
   networkName: mhsa
+  fc_dropout: 0.1
+
   # only for mhsa
   num_encoder_layers: 4
   nhead: 8
   dim_feedforward: 256
   dropout: 0.1
-  fc_dropout: 0.1
+  
+  # only for LSTM
+  # whether include self-attention layer
+  attention: False
+  # LSTM or GRU
+  rnn_type: LSTM
+  hidden_size: 128
 
 optimiser:
+  # Adam or SGD
   optimizer: Adam
   max_epoch: 100
   lr: 0.001
   weight_decay: 0.000001
-  # lr: 0.01
   # for Adam
   beta1: 0.9
   beta2: 0.999
   # for SGD
   momentum: 0.98
+
   # for warmup
   num_warmup_epochs: 2
   num_training_epochs: 50
@@ -44,6 +60,4 @@ optimiser:
   lr_step_size: 1
   lr_gamma: 0.1
 
-dataset:
-  temp_save_root: ./data
-  save_root: ./runs
+io:

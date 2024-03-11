@@ -67,41 +67,28 @@ def single_run(train_loader, val_loader, test_loader, config, device, log_dir):
     return result_ls
 
 
-def load_data(sp, time_format):
+def load_data(sp):
     sp["geometry"] = sp["geometry"].apply(wkt.loads)
     sp = gpd.GeoDataFrame(sp, geometry="geometry", crs="EPSG:4326")
 
     sp.index.name = "id"
     sp.reset_index(inplace=True)
 
-    if time_format == "absolute":
-        sp["started_at"] = pd.to_datetime(sp["started_at"], format="mixed", yearfirst=True, utc=True).dt.tz_localize(
-            None
-        )
-        sp["finished_at"] = pd.to_datetime(sp["finished_at"], format="mixed", yearfirst=True, utc=True).dt.tz_localize(
-            None
-        )
-    elif time_format == "relative":
+    def _transfer_time_to_absolute(df, start_time):
+        duration_arr = df["duration"].to_list()[:-1]
+        duration_arr.insert(0, 0)
+        timedelta_arr = np.array([datetime.timedelta(hours=i) for i in np.cumsum(duration_arr)])
 
-        def _transfer_time_to_absolute(df, start_time):
-            duration_arr = df["duration"].to_list()[:-1]
-            duration_arr.insert(0, 0)
-            timedelta_arr = np.array([datetime.timedelta(hours=i) for i in np.cumsum(duration_arr)])
+        df["started_at"] = timedelta_arr + start_time
+        df["finished_at"] = df["started_at"] + pd.to_timedelta(df["duration"], unit="hours")
 
-            df["started_at"] = timedelta_arr + start_time
-            df["finished_at"] = df["started_at"] + pd.to_timedelta(df["duration"], unit="hours")
+        return df
 
-            return df
-
-        # transfer duration to absolut time format for each user
-        sp = sp.groupby("user_id", as_index=False).apply(
-            _transfer_time_to_absolute, start_time=datetime.datetime(2023, 1, 1, hour=8)
-        )
-        sp.reset_index(drop=True, inplace=True)
-    else:
-        raise AttributeError(
-            f"time_format unknown. Please check the input arguement. We only support 'absolute', 'relative'. You passed {args.method}"
-        )
+    # transfer duration to absolut time format for each user
+    sp = sp.groupby("user_id", as_index=False).apply(
+        _transfer_time_to_absolute, start_time=datetime.datetime(2023, 1, 1, hour=8)
+    )
+    sp.reset_index(drop=True, inplace=True)
 
     def _get_time_info(df):
         min_day = pd.to_datetime(df["started_at"].min().date())
@@ -126,7 +113,7 @@ if __name__ == "__main__":
         type=str,
         nargs="?",
         help="Path to the config file.",
-        default="./example/config/mhsa.yml",
+        default="./example/config/config.yml",
     )
     args = parser.parse_args()
 
@@ -135,13 +122,13 @@ if __name__ == "__main__":
     config = edict(config)
 
     # read and preprocess
-    sp = pd.read_csv(os.path.join(config.temp_save_root, "input", f"{config.dataset}.csv"), index_col="index")
-    sp = load_data(sp, time_format=config.time_format)
+    sp = pd.read_csv(os.path.join(config.data_save_root, "input", f"{config.dataset}.csv"), index_col="index")
+    sp = load_data(sp)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # get data for nn, initialize the location and user number
-    max_locations, max_users = prepare_nn_dataset(sp, config.temp_save_root)
+    max_locations, max_users = prepare_nn_dataset(sp, config.data_save_root)
     config["total_loc_num"] = int(max_locations + 1)
     config["total_user_num"] = int(max_users + 1)
 

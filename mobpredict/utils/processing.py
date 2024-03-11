@@ -9,7 +9,7 @@ from pathlib import Path
 from sklearn.preprocessing import OrdinalEncoder
 
 
-def prepare_nn_dataset(source_file, temp_save_root):
+def prepare_nn_dataset(source_file, save_root):
     source_file.sort_values(by=["user_id", "start_day", "start_min"], inplace=True)
 
     # encoder user, 0 reserved for padding
@@ -37,16 +37,16 @@ def prepare_nn_dataset(source_file, temp_save_root):
         f"Max location id:{train_data.location_id.max()}, unique location id:{train_data.location_id.unique().shape[0]}"
     )
 
-    _generate_temp_datasets(train_data, temp_save_root, "train")
-    _generate_temp_datasets(vali_data, temp_save_root, "validation")
-    _generate_temp_datasets(test_data, temp_save_root, "test")
+    _generate_temp_datasets(train_data, save_root, "train")
+    _generate_temp_datasets(vali_data, save_root, "validation")
+    _generate_temp_datasets(test_data, save_root, "test")
 
     return train_data.location_id.max(), train_data.user_id.max()
 
 
-def _generate_temp_datasets(data, temp_save_root, dataset_type):
+def _generate_temp_datasets(data, save_root, dataset_type):
     """Generate the datasets and save to the disk."""
-    save_path = os.path.join(temp_save_root, "temp", f"{dataset_type}.pk")
+    save_path = os.path.join(save_root, "temp", f"{dataset_type}.pk")
     if not Path(save_path).is_file():
         valid_records = _get_valid_sequence(data)
 

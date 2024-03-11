@@ -86,9 +86,9 @@ def get_dataloaders(config):
         "pin_memory": True,
     }
 
-    dataset_train = traj_dataset(os.path.join(config.temp_save_root, "temp", "train.pk"))
-    dataset_val = traj_dataset(os.path.join(config.temp_save_root, "temp", "validation.pk"))
-    dataset_test = traj_dataset(os.path.join(config.temp_save_root, "temp", "test.pk"))
+    dataset_train = traj_dataset(os.path.join(config.data_save_root, "temp", "train.pk"))
+    dataset_val = traj_dataset(os.path.join(config.data_save_root, "temp", "validation.pk"))
+    dataset_test = traj_dataset(os.path.join(config.data_save_root, "temp", "test.pk"))
 
     train_loader = torch.utils.data.DataLoader(dataset_train, collate_fn=collate_fn, **kwds_train)
     val_loader = torch.utils.data.DataLoader(dataset_val, collate_fn=collate_fn, **kwds_val)
