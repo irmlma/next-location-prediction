@@ -37,10 +37,9 @@ def get_models(config, device):
 
 def init_save_path(config):
     """define the path to save, and save the configuration file."""
+    networkName = f"{config.train_dataset}_{config.networkName}"
     if config.networkName == "rnn" and config.attention:
-        networkName = f"{config.dataset}_{config.networkName}_Attn"
-    else:
-        networkName = f"{config.dataset}_{config.networkName}"
+        networkName += "_Attn"
     log_dir = os.path.join(config.save_root, f"{networkName}_{str(int(datetime.datetime.now().timestamp()))}")
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)

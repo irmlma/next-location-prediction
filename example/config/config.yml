@@ -1,14 +1,14 @@
 misc:
-  # True: train NN with 'train_dataset'
-  # False: use trained NN from pretrain_filepath with 'train_dataset'
+  # True: train 'networkName' NN with 'train_dataset' in 'data_save_root'
+  # False: use 'pretrain_file' NN to test data from 'inference_data_dir' in 'data_save_root'
   training: True
 
   data_save_root: ./data
   save_root: ./runs
 
   train_dataset: dtepr
-  inference_data_dir: dtepr
-  pretrain_file: mobis_mhsa_1698746890
+  inference_data_dir: inference
+  pretrain_file: dtepr_mhsa_1710193432
 
   # 
   if_embed_time: True
@@ -59,5 +59,3 @@ optimiser:
   patience: 3
   lr_step_size: 1
   lr_gamma: 0.1
-
-io:

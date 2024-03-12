@@ -121,34 +121,30 @@ if __name__ == "__main__":
     config = load_config(args.config)
     config = edict(config)
 
-    # read and preprocess
-    sp = pd.read_csv(os.path.join(config.data_save_root, "input", f"{config.dataset}.csv"), index_col="index")
-    sp = load_data(sp)
-
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    log_dir = init_save_path(config)
 
-    # get data for nn, initialize the location and user number
-    max_locations, max_users = prepare_nn_dataset(sp, config.data_save_root)
-    config["total_loc_num"] = int(max_locations + 1)
-    config["total_user_num"] = int(max_users + 1)
+    if config.training:  # for training
+        # read and preprocess
+        sp = pd.read_csv(os.path.join(config.data_save_root, f"{config.train_dataset}.csv"), index_col="index")
+        sp = load_data(sp)
 
-    # get dataloaders
-    train_loader, val_loader, test_loader = get_dataloaders(config)
+        # get data for nn, initialize the location and user number
+        max_locations, max_users = prepare_nn_dataset(sp, config.data_save_root)
+        config["total_loc_num"] = int(max_locations + 1)
+        config["total_user_num"] = int(max_users + 1)
 
-    # possibility to enable multiple runs
-    result_ls = []
-    for i in range(1):
+        # get dataloaders
+        train_loader, val_loader, test_loader = get_dataloaders(config)
+
         # train, validate and test
-        log_dir = init_save_path(config)
         # res_single contains the performance of validation and test of the current run
         res_single = single_run(train_loader, val_loader, test_loader, config, device, log_dir)
-        result_ls.extend(res_single)
 
-    # save results
-    result_df = pd.DataFrame(result_ls)
-    train_type = "default"
-    filename = os.path.join(
-        config.save_root,
-        f"{config.dataset}_{config.networkName}_{train_type}_{str(int(datetime.datetime.now().timestamp()))}.csv",
-    )
-    result_df.to_csv(filename, index=False)
+        # save results
+        result_df = pd.DataFrame(res_single)
+        type = "default"
+        filename = os.path.join(log_dir, f"{config.train_dataset}_{config.networkName}_{type}.csv")
+        result_df.to_csv(filename, index=False)
+    else:  # for inference
+        pass
