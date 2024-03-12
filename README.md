@@ -1,4 +1,4 @@
-# next-location-prediction
+# Next location prediction
 
 [![arXiv](https://img.shields.io/badge/arXiv-2311.11749-b31b1b.svg)](https://arxiv.org/abs/2311.11749)
 
@@ -11,7 +11,7 @@ pip install -e .
 
 ## Neural network implementation
 
-`mobpredict/networks/` contains network implementation for multi-head self-attentional (mhsa) model and LSTM models.
+`mobpredict/networks/` contains network implementation for multi-head self-attentional (MHSA) model and LSTM models.
 
 ## Training
 
