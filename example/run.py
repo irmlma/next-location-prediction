@@ -69,7 +69,7 @@ def train_run(config, device, log_dir):
 
     # get test loader
     test_path = os.path.join(config.data_save_root, "temp", config.train_dataset + "_trained_test.pk")
-    test_loader = get_inference_loader(config, test_path=test_path)
+    test_loader = get_inference_loader(config, path=test_path)
 
     # test, return test performances
     perf = get_test_result(config, best_model, test_loader, device)
@@ -184,8 +184,10 @@ if __name__ == "__main__":
         filename = os.path.join(log_dir, f"{config.train_dataset}_{config.networkName}_{type}.csv")
         result_df.to_csv(filename, index=False)
     else:  # for inference
+        # get all datasets in inference_data_dir
         all_files = glob.glob(os.path.join(config.data_save_root, config.inference_data_dir, "*.csv"))
 
+        # preprocess all datasets, and get their filename
         inf_sps_ls = []
         filename_ls = []
         for file in all_files:
@@ -208,6 +210,7 @@ if __name__ == "__main__":
         config["total_loc_num"] = int(max_locations + 1)
         config["total_user_num"] = int(max_users + 1)
 
+        # run inference
         performance_res = inference_run(config, device)
 
         # save results
