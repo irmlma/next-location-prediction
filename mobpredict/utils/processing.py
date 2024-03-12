@@ -1,4 +1,5 @@
 import os
+import glob
 import numpy as np
 import pickle as pickle
 from tqdm import tqdm
@@ -9,18 +10,23 @@ from pathlib import Path
 from sklearn.preprocessing import OrdinalEncoder
 
 
-def prepare_nn_dataset(source_file, save_root):
-    source_file.sort_values(by=["user_id", "start_day", "start_min"], inplace=True)
+def _preprocess_sp(sp):
+    sp.sort_values(by=["user_id", "start_day", "start_min"], inplace=True)
+    # truncate too long duration, >2 days to 2 days
+    sp.loc[sp["duration"] > 60 * 24 * 2 - 1, "duration"] = 60 * 24 * 2 - 1
+
+    return sp
+
+
+def prepare_nn_dataset_train(train_sp, train_name, save_root):
+    train_sp = _preprocess_sp(train_sp)
 
     # encoder user, 0 reserved for padding
     enc = OrdinalEncoder(dtype=np.int64)
-    source_file["user_id"] = enc.fit_transform(source_file["user_id"].values.reshape(-1, 1)) + 1
-
-    # truncate too long duration, >2 days to 2 days
-    source_file.loc[source_file["duration"] > 60 * 24 * 2 - 1, "duration"] = 60 * 24 * 2 - 1
+    train_sp["user_id"] = enc.fit_transform(train_sp["user_id"].values.reshape(-1, 1)) + 1
 
     # split the datasets, user dependent 0.6, 0.2, 0.2
-    train_data, vali_data, test_data = _split_dataset(source_file)
+    train_data, vali_data, test_data = _split_dataset(train_sp)
 
     # encode unseen locations in validation and test into 0
     enc = OrdinalEncoder(
@@ -33,20 +39,70 @@ def prepare_nn_dataset(source_file, save_root):
     vali_data["location_id"] = enc.transform(vali_data["location_id"].values.reshape(-1, 1)) + 2
     test_data["location_id"] = enc.transform(test_data["location_id"].values.reshape(-1, 1)) + 2
 
-    print(
-        f"Max location id:{train_data.location_id.max()}, unique location id:{train_data.location_id.unique().shape[0]}"
+    max_user = train_data.user_id.max()
+    max_location = train_data.location_id.max()
+    print(f"Max location id:{max_location}, Max user id:{max_user}")
+
+    _generate_temp_datasets(train_data, save_root, train_name + "_trained", "train")
+    _generate_temp_datasets(vali_data, save_root, train_name + "_trained", "validation")
+    _generate_temp_datasets(test_data, save_root, train_name + "_trained", "test")
+
+    return max_location, max_user
+
+
+def prepare_nn_dataset_inference(inference_sps, train_sp, inference_names, train_name, save_root):
+    train_sp = _preprocess_sp(train_sp)
+
+    # encoder user, 0 reserved for padding
+    enc_user = OrdinalEncoder(dtype=np.int64, handle_unknown="use_encoded_value", unknown_value=-1).fit(
+        train_sp["user_id"].values.reshape(-1, 1)
     )
+    train_sp["user_id"] = enc_user.transform(train_sp["user_id"].values.reshape(-1, 1)) + 1
 
-    _generate_temp_datasets(train_data, save_root, "train")
-    _generate_temp_datasets(vali_data, save_root, "validation")
-    _generate_temp_datasets(test_data, save_root, "test")
+    # split the datasets, user dependent 0.6, 0.2, 0.2
+    train_data, vali_data, test_data = _split_dataset(train_sp)
 
-    return train_data.location_id.max(), train_data.user_id.max()
+    # encode unseen locations in validation and test into 0
+    enc_locs = OrdinalEncoder(
+        dtype=np.int64,
+        handle_unknown="use_encoded_value",
+        unknown_value=-1,
+    ).fit(train_data["location_id"].values.reshape(-1, 1))
+    # add 2 to account for unseen locations and to account for 0 padding
+    train_data["location_id"] = enc_locs.transform(train_data["location_id"].values.reshape(-1, 1)) + 2
+    vali_data["location_id"] = enc_locs.transform(vali_data["location_id"].values.reshape(-1, 1)) + 2
+    test_data["location_id"] = enc_locs.transform(test_data["location_id"].values.reshape(-1, 1)) + 2
+
+    max_user = train_data.user_id.max()
+    max_location = train_data.location_id.max()
+    print(f"Max location id:{max_location}, Max user id:{max_user}")
+
+    _generate_temp_datasets(train_data, save_root, train_name + "_trained", "train")
+    _generate_temp_datasets(vali_data, save_root, train_name + "_trained", "validation")
+    _generate_temp_datasets(test_data, save_root, train_name + "_trained", "test")
+
+    # preprocess for all other intervention datasets
+    for sp, filename in tqdm(zip(inference_sps, inference_names)):
+        sp = _preprocess_sp(sp)
+
+        sp["user_id"] = enc_user.transform(sp["user_id"].values.reshape(-1, 1)) + 1
+
+        # split the datasets, user dependent 0.6, 0.2, 0.2
+        train_data, vali_data, test_data = _split_dataset(sp)
+
+        # encode
+        vali_data["location_id"] = enc_locs.transform(vali_data["location_id"].values.reshape(-1, 1)) + 2
+        test_data["location_id"] = enc_locs.transform(test_data["location_id"].values.reshape(-1, 1)) + 2
+
+        _generate_temp_datasets(vali_data, save_root, filename, "validation")
+        _generate_temp_datasets(test_data, save_root, filename, "test")
+
+    return max_location, max_user
 
 
-def _generate_temp_datasets(data, save_root, dataset_type):
+def _generate_temp_datasets(data, save_root, filename, dataset_type):
     """Generate the datasets and save to the disk."""
-    save_path = os.path.join(save_root, "temp", f"{dataset_type}.pk")
+    save_path = os.path.join(save_root, "temp", filename + f"_{dataset_type}.pk")
     if not Path(save_path).is_file():
         valid_records = _get_valid_sequence(data)
 
@@ -152,5 +208,5 @@ def _get_valid_sequence(input_df):
             delayed(func)(group, **kwargs) for _, group in tqdm(dfGrouped, disable=not print_progress)
         )
 
-    valid_user_ls = applyParallel(input_df.groupby("user_id"), getValidSequenceUser, n_jobs=-1)
+    valid_user_ls = applyParallel(input_df.groupby("user_id"), getValidSequenceUser, n_jobs=-1, print_progress=False)
     return [item for sublist in valid_user_ls for item in sublist]

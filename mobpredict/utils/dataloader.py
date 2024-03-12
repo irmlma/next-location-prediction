@@ -66,7 +66,7 @@ def collate_fn(batch):
     return src_batch, tgt_batch, dict_batch
 
 
-def get_dataloaders(config):
+def get_train_vali_loaders(config, train_path, vali_path):
     kwds_train = {
         "shuffle": True,
         "num_workers": config["num_workers"],
@@ -79,6 +79,18 @@ def get_dataloaders(config):
         "batch_size": config["batch_size"],
         "pin_memory": True,
     }
+
+    dataset_train = traj_dataset(train_path)
+    dataset_val = traj_dataset(vali_path)
+
+    train_loader = torch.utils.data.DataLoader(dataset_train, collate_fn=collate_fn, **kwds_train)
+    val_loader = torch.utils.data.DataLoader(dataset_val, collate_fn=collate_fn, **kwds_val)
+
+    print(f"length of the train loader: {len(train_loader)}\t validation loader:{len(val_loader)}\t")
+    return train_loader, val_loader
+
+
+def get_test_loaders(config, test_path):
     kwds_test = {
         "shuffle": False,
         "num_workers": config["num_workers"],
@@ -86,16 +98,9 @@ def get_dataloaders(config):
         "pin_memory": True,
     }
 
-    dataset_train = traj_dataset(os.path.join(config.data_save_root, "temp", "train.pk"))
-    dataset_val = traj_dataset(os.path.join(config.data_save_root, "temp", "validation.pk"))
-    dataset_test = traj_dataset(os.path.join(config.data_save_root, "temp", "test.pk"))
+    dataset_test = traj_dataset(test_path)
 
-    train_loader = torch.utils.data.DataLoader(dataset_train, collate_fn=collate_fn, **kwds_train)
-    val_loader = torch.utils.data.DataLoader(dataset_val, collate_fn=collate_fn, **kwds_val)
     test_loader = torch.utils.data.DataLoader(dataset_test, collate_fn=collate_fn, **kwds_test)
 
-    print(
-        f"length of the train loader: {len(train_loader)}\t validation loader:{len(val_loader)}\t test loader:{len(test_loader)}"
-    )
-    return train_loader, val_loader, test_loader
-
+    print(f"length of the test loader: {len(test_loader)}")
+    return test_loader

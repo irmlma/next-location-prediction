@@ -7,6 +7,7 @@ misc:
   save_root: ./runs
 
   train_dataset: dtepr
+  # only used for inference
   inference_data_dir: inference
   pretrain_file: dtepr_mhsa_1710193432
 
