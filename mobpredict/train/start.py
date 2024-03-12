@@ -40,7 +40,7 @@ def init_save_path(config):
     networkName = f"{config.train_dataset}_{config.networkName}"
     if config.networkName == "rnn" and config.attention:
         networkName += "_Attn"
-    log_dir = os.path.join(config.save_root, f"{networkName}_{str(int(datetime.datetime.now().timestamp()))}")
+    log_dir = os.path.join(config.run_save_root, f"{networkName}_{str(int(datetime.datetime.now().timestamp()))}")
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
     with open(os.path.join(log_dir, "conf.json"), "w") as fp:

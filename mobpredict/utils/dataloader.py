@@ -90,17 +90,17 @@ def get_train_vali_loaders(config, train_path, vali_path):
     return train_loader, val_loader
 
 
-def get_test_loaders(config, test_path):
-    kwds_test = {
+def get_inference_loader(config, path):
+    kwds = {
         "shuffle": False,
         "num_workers": config["num_workers"],
         "batch_size": config["batch_size"],
         "pin_memory": True,
     }
 
-    dataset_test = traj_dataset(test_path)
+    dataset = traj_dataset(path)
 
-    test_loader = torch.utils.data.DataLoader(dataset_test, collate_fn=collate_fn, **kwds_test)
+    loader = torch.utils.data.DataLoader(dataset, collate_fn=collate_fn, **kwds)
 
-    print(f"length of the test loader: {len(test_loader)}")
-    return test_loader
+    print(f"length of the inference loader: {len(loader)}")
+    return loader

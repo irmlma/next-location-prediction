@@ -7,12 +7,9 @@ import os
 import glob
 
 import pandas as pd
-import geopandas as gpd
 import datetime
 
 import yaml
-
-from shapely import wkt
 
 from easydict import EasyDict as edict
 
@@ -20,7 +17,7 @@ from mobpredict.utils import (
     prepare_nn_dataset_train,
     prepare_nn_dataset_inference,
     get_train_vali_loaders,
-    get_test_loaders,
+    get_inference_loader,
 )
 from mobpredict.train import init_save_path, get_models, get_test_result, get_trained_nets
 
@@ -72,7 +69,7 @@ def train_run(config, device, log_dir):
 
     # get test loader
     test_path = os.path.join(config.data_save_root, "temp", config.train_dataset + "_trained_test.pk")
-    test_loader = get_test_loaders(config, test_path=test_path)
+    test_loader = get_inference_loader(config, test_path=test_path)
 
     # test, return test performances
     perf = get_test_result(config, best_model, test_loader, device)
@@ -82,45 +79,34 @@ def train_run(config, device, log_dir):
     return result_ls
 
 
-def inference_run(config, device, log_dir, all_files):
-    # get default train, vali and test dataset
-    default_files = [files for files in all_files if "default" in files]
-    default_train = [files for files in default_files if "train" in files][0]
-    default_validation = [files for files in default_files if "validation" in files][0]
-
-    result_ls = []
-
-    # get data
-    train_loader, val_loader = get_dataloaders(config, default_train, default_validation)
+def inference_run(config, device):
+    all_files = glob.glob(os.path.join(config.data_save_root, "temp", "*.pk"))
 
     # get model
     model = get_models(config, device)
 
-    # train
-    model, perf = get_trained_nets(config, model, train_loader, val_loader, device, log_dir)
-    # model.load_state_dict(torch.load(r"D:\Code\HAI-IRMA\WP1\npp\outputs\gc_transformer_1679872715/checkpoint.pt"))
+    result_ls = []
 
-    # get the performance
-    # perf["dataset"] = default_validation.split("\\")[-1].split(".")[0]
-    # result_ls.append(perf)
+    # load trained model
+    model.load_state_dict(torch.load(os.path.join(config.run_save_root, config.pretrain_dir, "checkpoint.pt")))
 
-    for dataset_dir in all_files:
-        if dataset_dir == default_train or dataset_dir == default_validation:
+    for file in all_files:
+        print("=" * 50)
+        filename = file.split(os.sep)[-1].split(".")[0]
+
+        print(filename)
+
+        if "train" == filename.split("_")[-1]:
             continue
 
-        filename = dataset_dir.split("\\")[-1].split(".")[0]
+        # get inference loader
+        loader = get_inference_loader(config, file)
 
-        if "validation" in filename:
-            continue
+        # inference
+        perf = get_test_result(config, model, loader, device)
 
-        test_loader = get_test_loader(config, dataset_dir)
-
-        # test
-        perf, user = get_test_result(config, model, test_loader, device)
-        user.to_csv(os.path.join(log_dir, "user_detail.csv"))
-
-        perf["dataset"] = dataset_dir.split("\\")[-1].split(".")[0]
-        print(perf)
+        # save the performance results
+        perf["dataset"] = filename
         result_ls.append(perf)
 
     return result_ls
@@ -143,9 +129,6 @@ def load_data(sp):
         df["duration"] = (df["duration"] * 60).round()
 
         return df
-
-    # sp["geometry"] = sp["geometry"].apply(wkt.loads)
-    # sp = gpd.GeoDataFrame(sp, geometry="geometry", crs="EPSG:4326")
 
     sp.index.name = "id"
     sp.reset_index(inplace=True)
@@ -224,3 +207,8 @@ if __name__ == "__main__":
         )
         config["total_loc_num"] = int(max_locations + 1)
         config["total_user_num"] = int(max_users + 1)
+
+        performance_res = inference_run(config, device)
+
+        # save results
+        pd.DataFrame(performance_res).to_csv(os.path.join(log_dir, f"inference_{config.networkName}.csv"), index=False)

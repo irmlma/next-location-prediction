@@ -182,8 +182,6 @@ def train_net(config, model, train_loader, val_loader, device, log_dir):
             scheduler_ES.step()
 
         if config.verbose:
-            # print("Current learning rate: {:.5f}".format(scheduler.get_last_lr()[0]))
-            # print("Current learning rate: {:.5f}".format(scheduler_ES.get_last_lr()[0]))
             print("Current learning rate: {:.5f}".format(optim.param_groups[0]["lr"]))
             print("=" * 50)
 
