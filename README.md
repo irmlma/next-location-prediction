@@ -30,6 +30,7 @@ python example/run.py
 ```
 with `training: False` in `example/config/config.yml` file. The code will take an already trained neural network for next location prediction, stored in `run_save_root` with dir name `pretrain_dir`, for inference for all datasets stored in `data_save_root` under the dir `inference_data_dir`. The datasets shall be in the format generated with [mobility-simulation](https://github.com/irmlma/mobility-simulation). A folder containing the evaluation results will be created in `run_save_root`. 
 
+We provide an already trained model with the default config parameters on the provided dtepr dataset. 
 ## Known issues:
 None
 

@@ -4,7 +4,7 @@ misc:
   training: True
 
   data_save_root: ./data
-  run_save_root: ./runs
+  run_save_root: ./data/model
 
   # dataset name for training, shall be available in 'data_save_root'
   train_dataset: dtepr
@@ -12,7 +12,7 @@ misc:
   # dir containing all datasets for inference, shall be available in 'data_save_root'
   inference_data_dir: inference
   # dir containing the trained nn weights, shall be available in 'run_save_root'
-  pretrain_dir: dtepr_mhsa_1710240038
+  pretrain_dir: dtepr_mhsa_demo
 
   # 
   if_embed_time: True
