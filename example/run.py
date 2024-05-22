@@ -88,7 +88,7 @@ def inference_run(config, device):
     result_ls = []
 
     # load trained model
-    model.load_state_dict(torch.load(os.path.join(config.run_save_root, config.pretrain_dir, "checkpoint.pt")))
+    model.load_state_dict(torch.load(os.path.join(config.run_save_root, config.pretrain_dir, "checkpoint.pt"), map_location=device))
 
     for file in all_files:
         print("=" * 50)
