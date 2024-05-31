@@ -4,7 +4,8 @@ misc:
   training: True
 
   data_save_root: ./data
-  run_save_root: ./data/model
+  run_save_root: ./runs
+  run_name: dtepr_mhsa
 
   # dataset name for training, shall be available in 'data_save_root'
   train_dataset: dtepr

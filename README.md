@@ -19,7 +19,7 @@ Run
 ```
 python example/run.py
 ```
-with `training: True` in `example/config/config.yml` file. The code will train a neural network for next location prediction with a dataset generated from [mobility-simulation](https://github.com/irmlma/mobility-simulation). The `train_dataset` shall be avilable as a `.csv` file stored in `data_save_root`. The other hyper parameters are defined in the config yml file. A folder containing the trained nn parameters will be created in `run_save_root`. 
+with `training: True` in `example/config/config.yml` file. The code will train a neural network for next location prediction with a dataset generated from [mobility-simulation](https://github.com/irmlma/mobility-simulation). The `train_dataset` shall be avilable as a `.csv` file stored in `data_save_root`. The other hyper parameters are defined in the config yml file. A folder with specified folder name (`run_name`) containing the trained nn parameters will be created in `run_save_root`. 
 
 
 ## Inference
