@@ -11,12 +11,24 @@ type: software
 version: 0.0.1
 date-released: 2024-06-13
 preferred-citation:
-  type: article
+  type: generic
   authors:
   - family-names: Hong
     given-names: Ye
     orcid: 'https://orcid.org/0000-0002-8996-3748'
+  - family-names: Xin
+    given-names: Yanan
+    orcid: 'https://orcid.org/0000-0003-3866-821X'
+  - family-names: Dirmeier
+    given-names: Simon
+    orcid: 'https://orcid.org/0000-0001-9795-3550'
+  - family-names: Perez-Cruz
+    given-names: Fernando
+    orcid: 'https://orcid.org/0000-0001-8996-5076'
+  - family-names: Raubal
+    given-names: Martin
+    orcid: 'https://orcid.org/0000-0001-5951-6835'
   doi: "10.48550/arXiv.2311.11749"
-  journal: "arXiv preprint"
+  publisher: "arXiv"
   title: "Revealing behavioral impact on mobility prediction networks through causal interventions"
   year: 2024
